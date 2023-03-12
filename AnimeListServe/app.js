@@ -1,75 +1,75 @@
-//#region imports
-const createError = require("http-errors");
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const logger = require("morgan");
-const livereload = require("livereload");
-const connectLiveReload = require("connect-livereload");
-const { graphqlHTTP } = require("express-graphql");
+// #region imports
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const livereload = require('livereload');
+const connectLiveReload = require('connect-livereload');
+const { graphqlHTTP } = require('express-graphql');
 const colors = require('colors');
-const schema = require("./graphql-mongoose-atlas-api/schema/schema");
-const connectMongoDB = require("./graphql-mongoose-atlas-api/config/mongodb");
+const schema = require('./graphql-mongoose-atlas-api/schema/schema');
+const connectMongoDB = require('./graphql-mongoose-atlas-api/config/mongoose-connectdb');
 
-const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
-//#endregion imports
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+// #endregion imports
 
-require("dotenv").config();
+require('dotenv').config();
 
-//#region create reload server
+// #region create reload server
 const liveReloadServer = livereload.createServer();
-liveReloadServer.server.once("connection", () => {
+liveReloadServer.server.once('connection', () => {
   setTimeout(() => {
-    liveReloadServer.refresh("/");
+    liveReloadServer.refresh('/');
   }, 100);
 });
-//#endregion create reload server
+// #endregion create reload server
 
-var app = express();
+const app = express();
 
-//#region connect to database
+// #region connect to database
 connectMongoDB();
-//#endregion
+// #endregion
 
 app.use(connectLiveReload());
 
-//#region view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "pug");
-//#endregion view engine setup
+// #region view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+// #endregion view engine setup
 
-app.use(logger("dev"));
+app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
 
-//#region endpoints
+// #region endpoints
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use(
   '/graphql',
   graphqlHTTP({
     schema,
-    graphiql: process.env.NODE_ENV === 'development'
-  })
+    graphiql: process.env.NODE_ENV === 'development',
+  }),
 );
-//#endregion endpoints
+// #endregion endpoints
 
-//#region catch 404 and forward to error handler
-app.use(function (req, res, next) {
+// #region catch 404 and forward to error handler
+app.use((req, res, next) => {
   next(createError(404));
 });
-//#endregion catch 404 and forward to error handler
+// #endregion catch 404 and forward to error handler
 
-//#region error handler
-app.use(function (err, req, res, next) {
+// #region error handler
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
   res.status(err.status || 500);
-  res.render("error");
+  res.render('error');
 });
 
 module.exports = app;
-//#endregion error handler
+// #endregion error handler
